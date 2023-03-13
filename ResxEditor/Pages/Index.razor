@@ -4,7 +4,7 @@
 <InputFile id="filePicker" OnChange="OnLoadFiles" accept=".resx" hidden multiple />
 
 <div class="container-fluid mt-2 w-100">
-    <div class="row">
+    <div class="row mb-2">
         <div class="col">
             <div class="input-group">
                 <div class="form-floating">
@@ -21,46 +21,47 @@
             </div>
         </div>
     </div>
-</div>
-
-<div class="container-fluid mt-2 w-100">
-    <table class="table table-bordered table-striped-columns">
-        <thead>
-        <tr>
-            <th scope="col">Key</th>
-            <th scope="col">Value</th>
-
-            @foreach (var locale in _locales)
-            {
-                <th scope="col">Value - @locale</th>
-            }
-        </tr>
-        </thead>
-        <tbody>
-        @if (_mainDocument != null)
-        {
-            foreach (var (key, dict) in _mainDocument.Values)
-            {
+    <div class="row">
+        <div class="col">
+            <table class="table table-bordered table-striped-columns">
+                <thead>
                 <tr>
-                    <td>@key</td>
-                    @foreach (var value in dict)
+                    <th scope="col">Key</th>
+                    <th scope="col">Value</th>
+
+                    @foreach (var locale in _locales)
                     {
-                        if (value.Key == _selectedItem.Item1 && value.Value == _selectedItem.Item2)
-                        {
-                            <input type="text" name="@value.Key" value="@value.Value" class="bg-body text-white border-1 rounded-4 mx-2 my-1 w-100"/>
-                        }
-                        else if (string.IsNullOrEmpty(value.Value))
-                        {
-                            <td style="background-color: red; width: 100%" @ondblclick="@(e => OnCellDoubleClick(e, value))"></td>
-                        }
-                        else
-                        {
-                            <td @ondblclick="@(e => OnCellDoubleClick(e, value))">@value.Value</td>
-                        }
+                        <th scope="col">Value - @locale</th>
                     }
                 </tr>
-            }
-        }
-        </tbody>
-    </table>
+                </thead>
+                <tbody>
+                @if (_mainDocument != null)
+                {
+                    foreach (var (key, dict) in _mainDocument.Values)
+                    {
+                        <tr>
+                            <td>@key</td>
+                            @foreach (var value in dict)
+                            {
+                                if (value.Key == _selectedItem.Item1 && value.Value == _selectedItem.Item2)
+                                {
+                                    <input type="text" name="@value.Key" value="@value.Value" class="form-control bg-body text-white rounded-2 ml-2 my-1 w-100 h-100 py-auto" />
+                                }
+                                else if (string.IsNullOrEmpty(value.Value))
+                                {
+                                    <td style="background-color: red; width: 100%" @ondblclick="@(e => OnCellDoubleClick(e, value))"></td>
+                                }
+                                else
+                                {
+                                    <td @ondblclick="@(e => OnCellDoubleClick(e, value))">@value.Value</td>
+                                }
+                            }
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
