@@ -25,34 +25,42 @@
 
 <div class="container-fluid mt-2 w-100">
     <table class="table table-bordered table-striped-columns">
+        <thead>
         <tr>
             <th scope="col">Key</th>
-            <th scope="col">Value - en-US</th>
+            <th scope="col">Value</th>
 
             @foreach (var locale in _locales)
             {
                 <th scope="col">Value - @locale</th>
             }
         </tr>
+        </thead>
+        <tbody>
         @if (_mainDocument != null)
         {
             foreach (var (key, dict) in _mainDocument.Values)
             {
                 <tr>
                     <td>@key</td>
-                    @foreach (var (_, value) in dict)
+                    @foreach (var value in dict)
                     {
-                        if (string.IsNullOrEmpty(value))
+                        if (value.Key == _selectedItem.Item1 && value.Value == _selectedItem.Item2)
                         {
-                            <td style="background-color: red">@value</td>
+                            <input type="text" name="@value.Key" value="@value.Value" class="bg-body text-white border-1 rounded-4 mx-2 my-1 w-100"/>
+                        }
+                        else if (string.IsNullOrEmpty(value.Value))
+                        {
+                            <td style="background-color: red; width: 100%" @ondblclick="@(e => OnCellDoubleClick(e, value))"></td>
                         }
                         else
                         {
-                            <td>@value</td>
+                            <td @ondblclick="@(e => OnCellDoubleClick(e, value))">@value.Value</td>
                         }
                     }
                 </tr>
             }
         }
+        </tbody>
     </table>
 </div>

@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-
+using Microsoft.AspNetCore.Components.Web;
 using ResxEditor.Resx;
 
 namespace ResxEditor.Pages;
@@ -10,7 +10,9 @@ public partial class Index : ComponentBase
 {
     private readonly List<string> _locales = new();
     private readonly List<IBrowserFile> _loadedFiles = new();
+
     private bool _isLoading;
+    private (string, string) _selectedItem;
 
     private ResxDocument _mainDocument;
 
@@ -20,6 +22,7 @@ public partial class Index : ComponentBase
         StateHasChanged();
 
         _loadedFiles.Clear();
+        _locales.Clear();
 
         var files = e.GetMultipleFiles();
         files = files.OrderByDescending(x => x.Name, StringComparer.Ordinal)
@@ -64,6 +67,13 @@ public partial class Index : ComponentBase
         }
 
         _isLoading = false;
+        StateHasChanged();
+    }
+
+    private void OnCellDoubleClick(MouseEventArgs e, KeyValuePair<string, string> value)
+    {
+        _selectedItem = (value.Key, value.Value);
+
         StateHasChanged();
     }
 
