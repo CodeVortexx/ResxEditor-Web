@@ -1,7 +1,8 @@
 ﻿using System.Text.RegularExpressions;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Web;
+
 using ResxEditor.Resx;
 
 namespace ResxEditor.Pages;
@@ -9,29 +10,37 @@ namespace ResxEditor.Pages;
 public partial class Index : ComponentBase
 {
     private readonly List<string> _locales = new();
-    private readonly List<ResxDocument> _loadedFiles = new();
+    private readonly List<ResxDocument> _loadedResxFiles = new();
 
-    private bool _isLoading;
+    private List<IBrowserFile> _loadedFiles = new();
     private (string Locale, string Value) _selectedItem;
-
     private ResxDocument _mainDocument;
+
+    private string _namespace = "";
+    private string _className = "";
 
     #region Events
 
-    private async void OnLoadFiles(InputFileChangeEventArgs e)
+    private void OnLoadFiles(InputFileChangeEventArgs e)
     {
-        _isLoading = true;
-        StateHasChanged();
-
-        _loadedFiles.Clear();
-        _locales.Clear();
-
-        var files = e.GetMultipleFiles();
-        files = files.OrderByDescending(x => x.Name, StringComparer.Ordinal)
+        _loadedFiles = e.GetMultipleFiles()
+            .OrderByDescending(x => x.Name, StringComparer.Ordinal)
             .ToList();
 
+        var firstFile = _loadedFiles.FirstOrDefault();
+        if (firstFile == null)
+            return;
+
+        _className = Path.GetFileNameWithoutExtension(firstFile.Name);
+    }
+
+    private async void OnOpenClick()
+    {
+        _locales.Clear();
+        _loadedResxFiles.Clear();
+
         // Retrieve the locales and load all the documents
-        foreach (var file in files)
+        foreach (var file in _loadedFiles)
         {
             try
             {
@@ -45,7 +54,7 @@ public partial class Index : ComponentBase
                     _mainDocument = new(file.Name);
                     _mainDocument.Parse(stream, true);
 
-                    _loadedFiles.Add(_mainDocument);
+                    _loadedResxFiles.Add(_mainDocument);
                 }
                 else
                 {
@@ -59,7 +68,7 @@ public partial class Index : ComponentBase
                     document.Parse(stream);
 
                     _mainDocument?.AddSubDocument(document);
-                    _loadedFiles.Add(document);
+                    _loadedResxFiles.Add(document);
                 }
             }
             catch (Exception exception)
@@ -69,7 +78,6 @@ public partial class Index : ComponentBase
             }
         }
 
-        _isLoading = false;
         StateHasChanged();
     }
 
@@ -91,9 +99,9 @@ public partial class Index : ComponentBase
         StateHasChanged();
     }
 
-    private async Task OnExportClick()
+    private void OnExportClick()
     {
-        await _mainDocument.Export();
+        _mainDocument.Export();
     }
 
     #endregion

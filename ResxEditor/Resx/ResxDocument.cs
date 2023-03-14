@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using System.Xml;
+using ResxEditor.Writers;
 
 namespace ResxEditor.Resx;
 
@@ -8,12 +9,13 @@ public partial class ResxDocument
     public SortedDictionary<string, string> Values { get; } = new();
 
     public readonly string Name;
+    public readonly string Namespace;
     public readonly string Locale = "en-US";
 
     private readonly Dictionary<string, ResxDocument> _subDocuments = new();
     private bool _isMainDocument;
 
-    public ResxDocument(string fileName)
+    public ResxDocument(string fileName, string namespaceString = "")
     {
         Name = Path.GetFileNameWithoutExtension(fileName);
 
@@ -22,6 +24,9 @@ public partial class ResxDocument
             return;
 
         Locale = match.Value;
+
+        if (!string.IsNullOrEmpty(namespaceString))
+            Namespace = namespaceString;
     }
 
     /// <summary>
@@ -67,11 +72,11 @@ public partial class ResxDocument
     /// <param name="otherDocument"></param>
     public void AddSubDocument(ResxDocument otherDocument)
     {
-        // We cannot merge into locale resx files.
+        // We cannot add into non-locale resx files.
         if (!_isMainDocument)
             return;
 
-        // We cannot merge files with a different start of the name
+        // We cannot add files with a different start of the name
         if (!otherDocument.Name.StartsWith(Name))
             return;
 
@@ -87,6 +92,12 @@ public partial class ResxDocument
             return default;
 
         var values = new SortedDictionary<string, Dictionary<string, string>>();
+        foreach (var (key, value) in Values)
+        {
+            values.Add(key, new());
+            values[key].Add(Locale, value);
+        }
+
         foreach (var (locale, otherDocument) in _subDocuments)
         {
             var missingValues = Values.Keys.Except(otherDocument.Values.Keys).ToList();
@@ -95,8 +106,6 @@ public partial class ResxDocument
 
             foreach (var (key, value) in otherDocument.Values)
             {
-                // Add the dictionary from the other document to this document
-                // And add a placeholder for this document's locale
                 if (!values.ContainsKey(key))
                 {
                     values.Add(key, new());
@@ -123,21 +132,31 @@ public partial class ResxDocument
         if (!Values.ContainsKey(key))
             return;
 
-        if (_subDocuments.ContainsKey(locale))
+        if (_subDocuments.TryGetValue(locale, out var document))
         {
-            _subDocuments[locale].Values[key] = newValue;
-            return;
+            document.Values[key] = newValue;
         }
-
-        Values[key] = newValue;
+        else
+        {
+            Values[key] = newValue;
+        }
     }
 
     /// <summary>
     /// Export all files and locales and let the user download these.
     /// </summary>
-    public async Task Export()
+    public void Export()
     {
-        // Export the main document first
+        if (!_isMainDocument)
+            return;
+
+        // Export .resx files first with template
+        ResxWriter.Write(this);
+
+        foreach (var (_, document) in _subDocuments)
+            ResxWriter.Write(document);
+
+        // Export .designer.cs file for main document
     }
 
     [GeneratedRegex("\\w{2}(?:-\\w{2})")]
