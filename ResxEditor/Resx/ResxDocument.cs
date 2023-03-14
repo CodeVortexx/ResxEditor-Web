@@ -54,7 +54,7 @@ public partial class ResxDocument
             var value = valueNode.InnerText;
 
             if (!Values.ContainsKey(name))
-                Values.Add(name, new Dictionary<string, string>());
+                Values.Add(name, new());
 
             Values[name].Add(Locale, value);
         }
@@ -73,6 +73,13 @@ public partial class ResxDocument
         // We cannot merge files with a different start of the name
         if (!otherDocument.Name.StartsWith(Name))
             return;
+
+        var missingValues = Values.Keys.Except(otherDocument.Values.Keys).ToList();
+        foreach (var missingValue in missingValues.Where(missingValue => !otherDocument.Values.ContainsKey(missingValue)))
+        {
+            otherDocument.Values.Add(missingValue, new());
+            otherDocument.Values[missingValue].Add(otherDocument.Locale, "");
+        }
 
         foreach (var (key, dict) in otherDocument.Values)
         {

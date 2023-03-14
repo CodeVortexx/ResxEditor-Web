@@ -9,7 +9,7 @@ namespace ResxEditor.Pages;
 public partial class Index : ComponentBase
 {
     private readonly List<string> _locales = new();
-    private readonly List<IBrowserFile> _loadedFiles = new();
+    private readonly List<ResxDocument> _loadedFiles = new();
 
     private bool _isLoading;
     private (string, string) _selectedItem;
@@ -33,8 +33,6 @@ public partial class Index : ComponentBase
         {
             try
             {
-                _loadedFiles.Add(file);
-
                 using var stream = new MemoryStream();
                 await file.OpenReadStream().CopyToAsync(stream);
 
@@ -44,6 +42,8 @@ public partial class Index : ComponentBase
                     // No locale found in name, so this is the main document
                     _mainDocument = new ResxDocument(file.Name);
                     _mainDocument.Parse(stream);
+
+                    _loadedFiles.Add(_mainDocument);
                 }
                 else
                 {
@@ -57,6 +57,7 @@ public partial class Index : ComponentBase
                     document.Parse(stream);
 
                     _mainDocument?.Merge(document);
+                    _loadedFiles.Add(document);
                 }
             }
             catch (Exception exception)

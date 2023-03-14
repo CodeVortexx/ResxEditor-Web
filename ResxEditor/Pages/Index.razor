@@ -46,11 +46,13 @@
                             {
                                 if (value.Key == _selectedItem.Item1 && value.Value == _selectedItem.Item2)
                                 {
-                                    <input type="text" name="@value.Key" value="@value.Value" class="form-control bg-body text-white rounded-2 ml-2 my-1 w-100 h-100 py-auto" />
+                                    <td class="m-0 p-0">
+                                        <input type="text" name="@value.Key" @bind-value="_selectedItem.Item2" class="form-control bg-secondary text-white rounded-0 w-100"/>
+                                    </td>
                                 }
                                 else if (string.IsNullOrEmpty(value.Value))
                                 {
-                                    <td style="background-color: red; width: 100%" @ondblclick="@(e => OnCellDoubleClick(e, value))"></td>
+                                    <td class="bg-danger" @ondblclick="@(e => OnCellDoubleClick(e, value))"></td>
                                 }
                                 else
                                 {

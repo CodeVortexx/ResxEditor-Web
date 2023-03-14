@@ -32,7 +32,7 @@ jobs:
       - name: Build and publish .NET WASM app
         run: dotnet publish ResxEditor/ResxEditor.csproj -c:Release -p:GHPages=true -o out --nologo
       - name: Change base adress
-        run: sed -i 's/<base href="\/" \/>/<base href="\/ResxEditor-Web\/" \/>/g' ./out/wwwroot/index.html && cat ./out/wwwroot/index.html
+        run: sed -i 's/<base href="\/" \/>/<base href="\/codevortex\/" \/>/g' ./out/wwwroot/index.html && cat ./out/wwwroot/index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
