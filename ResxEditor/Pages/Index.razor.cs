@@ -12,9 +12,11 @@ public partial class Index : ComponentBase
     private readonly List<ResxDocument> _loadedFiles = new();
 
     private bool _isLoading;
-    private (string, string) _selectedItem;
+    private (string Locale, string Value) _selectedItem;
 
     private ResxDocument _mainDocument;
+
+    #region Events
 
     private async void OnLoadFiles(InputFileChangeEventArgs e)
     {
@@ -40,8 +42,8 @@ public partial class Index : ComponentBase
                 if (match.Length == 0 || match.Name == "en-US")
                 {
                     // No locale found in name, so this is the main document
-                    _mainDocument = new ResxDocument(file.Name);
-                    _mainDocument.Parse(stream);
+                    _mainDocument = new(file.Name);
+                    _mainDocument.Parse(stream, true);
 
                     _loadedFiles.Add(_mainDocument);
                 }
@@ -56,7 +58,7 @@ public partial class Index : ComponentBase
                     var document = new ResxDocument(file.Name);
                     document.Parse(stream);
 
-                    _mainDocument?.Merge(document);
+                    _mainDocument?.AddSubDocument(document);
                     _loadedFiles.Add(document);
                 }
             }
@@ -71,12 +73,30 @@ public partial class Index : ComponentBase
         StateHasChanged();
     }
 
-    private void OnCellDoubleClick(MouseEventArgs e, KeyValuePair<string, string> value)
+    private void OnCellDoubleClick(KeyValuePair<string, string> value)
     {
         _selectedItem = (value.Key, value.Value);
-
         StateHasChanged();
     }
+
+    private void OnDeselectClick()
+    {
+        _selectedItem = (null, null);
+        StateHasChanged();
+    }
+
+    private void OnInputTextChanged(string key, string locale, string newValue)
+    {
+        _mainDocument?.EditValue(locale, key, newValue);
+        StateHasChanged();
+    }
+
+    private async Task OnExportClick()
+    {
+        await _mainDocument.Export();
+    }
+
+    #endregion
 
     [GeneratedRegex("\\w{2}(?:-\\w{2})")]
     private static partial Regex LocaleRegex();

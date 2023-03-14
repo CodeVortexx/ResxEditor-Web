@@ -5,10 +5,13 @@ namespace ResxEditor.Resx;
 
 public partial class ResxDocument
 {
-    public SortedDictionary<string, Dictionary<string, string>> Values { get; } = new();
+    public SortedDictionary<string, string> Values { get; } = new();
 
     public readonly string Name;
     public readonly string Locale = "en-US";
+
+    private readonly Dictionary<string, ResxDocument> _subDocuments = new();
+    private bool _isMainDocument;
 
     public ResxDocument(string fileName)
     {
@@ -25,8 +28,10 @@ public partial class ResxDocument
     /// Parses the ResxDocument
     /// </summary>
     /// <param name="xmlStream"></param>
-    public void Parse(Stream xmlStream)
+    /// <param name="isMainDocument"></param>
+    public void Parse(Stream xmlStream, bool isMainDocument = false)
     {
+        _isMainDocument = isMainDocument;
         Values.Clear();
 
         xmlStream.Position = 0;
@@ -52,11 +57,7 @@ public partial class ResxDocument
                 continue;
 
             var value = valueNode.InnerText;
-
-            if (!Values.ContainsKey(name))
-                Values.Add(name, new());
-
-            Values[name].Add(Locale, value);
+            Values.Add(name, value);
         }
     }
 
@@ -64,42 +65,79 @@ public partial class ResxDocument
     /// Merges the <see cref="Values"/> container from a different <see cref="ResxDocument"/>
     /// </summary>
     /// <param name="otherDocument"></param>
-    public void Merge(ResxDocument otherDocument)
+    public void AddSubDocument(ResxDocument otherDocument)
     {
         // We cannot merge into locale resx files.
-        if (Locale != "en-US" || Locale == otherDocument.Locale)
+        if (!_isMainDocument)
             return;
 
         // We cannot merge files with a different start of the name
         if (!otherDocument.Name.StartsWith(Name))
             return;
 
-        var missingValues = Values.Keys.Except(otherDocument.Values.Keys).ToList();
-        foreach (var missingValue in missingValues.Where(missingValue => !otherDocument.Values.ContainsKey(missingValue)))
-        {
-            otherDocument.Values.Add(missingValue, new());
-            otherDocument.Values[missingValue].Add(otherDocument.Locale, "");
-        }
+        _subDocuments.Add(otherDocument.Locale, otherDocument);
+    }
 
-        foreach (var (key, dict) in otherDocument.Values)
-        {
-            // Add the dictionary from the other document to this document
-            // And add a placeholder for this document's locale
-            if (!Values.ContainsKey(key))
-            {
-                Values.Add(key, dict);
+    /// <summary>
+    /// Retrieve the values
+    /// </summary>
+    public SortedDictionary<string, Dictionary<string, string>> GetValues()
+    {
+        if (!_isMainDocument)
+            return default;
 
-                foreach (var (_, _) in dict)
-                    Values[key].Add(Locale, "");
-            }
-            else
+        var values = new SortedDictionary<string, Dictionary<string, string>>();
+        foreach (var (locale, otherDocument) in _subDocuments)
+        {
+            var missingValues = Values.Keys.Except(otherDocument.Values.Keys).ToList();
+            foreach (var missingValue in missingValues.Where(missingValue => !otherDocument.Values.ContainsKey(missingValue)))
+                otherDocument.Values.Add(missingValue, "");
+
+            foreach (var (key, value) in otherDocument.Values)
             {
-                foreach (var (locale, value) in dict)
+                // Add the dictionary from the other document to this document
+                // And add a placeholder for this document's locale
+                if (!values.ContainsKey(key))
                 {
-                    Values[key].Add(locale, value);
+                    values.Add(key, new());
+                    values[key].Add(Locale, "");
+                }
+                else
+                {
+                    values[key].Add(locale, value);
                 }
             }
         }
+
+        return values;
+    }
+
+    /// <summary>
+    /// Alter a value with a select key and locale
+    /// </summary>
+    /// <param name="locale"></param>
+    /// <param name="key"></param>
+    /// <param name="newValue"></param>
+    public void EditValue(string locale, string key, string newValue)
+    {
+        if (!Values.ContainsKey(key))
+            return;
+
+        if (_subDocuments.ContainsKey(locale))
+        {
+            _subDocuments[locale].Values[key] = newValue;
+            return;
+        }
+
+        Values[key] = newValue;
+    }
+
+    /// <summary>
+    /// Export all files and locales and let the user download these.
+    /// </summary>
+    public async Task Export()
+    {
+        // Export the main document first
     }
 
     [GeneratedRegex("\\w{2}(?:-\\w{2})")]
