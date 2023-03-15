@@ -76,7 +76,7 @@ public class DesignerWriter
     /// Generates a *.Designer.cs file for the <see cref="ResxDocument"/> instance.
     /// </summary>
     /// <param name="document"></param>
-    public static void Write(ResxDocument document)
+    public static string Write(ResxDocument document)
     {
         var stringBuilder = new StringBuilder();
 
@@ -101,5 +101,7 @@ public class DesignerWriter
 
         // Write the footer
         stringBuilder.AppendLine(EndContent);
+
+        return stringBuilder.ToString();
     }
 }

@@ -133,7 +133,7 @@ public static class ResxWriter
     /// Generates a *.resx file for the <see cref="ResxDocument"/> instance.
     /// </summary>
     /// <param name="document"></param>
-    public static void Write(ResxDocument document)
+    public static string Write(ResxDocument document)
     {
         var stringBuilder = new StringBuilder();
 
@@ -150,5 +150,7 @@ public static class ResxWriter
 
         // Write footer
         stringBuilder.AppendLine(FileEnd);
+
+        return stringBuilder.ToString();
     }
 }

@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="Blazor.ContextMenu" Version="1.15.0" />
+        <PackageReference Include="CsvHelper" Version="30.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.3" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.3" PrivateAssets="all" />
     </ItemGroup>

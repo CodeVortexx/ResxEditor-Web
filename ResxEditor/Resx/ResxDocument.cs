@@ -1,29 +1,29 @@
-using System.Text.RegularExpressions;
+using System.Text;
 using System.Xml;
+using Microsoft.JSInterop;
 using ResxEditor.Writers;
 
 namespace ResxEditor.Resx;
 
-public partial class ResxDocument
+public class ResxDocument
 {
     public SortedDictionary<string, string> Values { get; } = new();
 
     public readonly string Name;
     public readonly string Namespace;
-    public readonly string Locale = "en-US";
+    public readonly string Locale;
+
+    private readonly IJSRuntime _jsRuntime;
 
     private readonly Dictionary<string, ResxDocument> _subDocuments = new();
     private bool _isMainDocument;
 
-    public ResxDocument(string fileName, string namespaceString = "")
+    public ResxDocument(IJSRuntime jsRuntime, string fileName, string locale = "en-US", string namespaceString = "")
     {
+        _jsRuntime = jsRuntime;
+
         Name = Path.GetFileNameWithoutExtension(fileName);
-
-        var match = LocaleRegex().Match(fileName);
-        if (string.IsNullOrEmpty(match.Value))
-            return;
-
-        Locale = match.Value;
+        Locale = locale;
 
         if (!string.IsNullOrEmpty(namespaceString))
             Namespace = namespaceString;
@@ -143,22 +143,54 @@ public partial class ResxDocument
     }
 
     /// <summary>
+    /// Add a new key to <see cref="ResxDocument"/> instance.
+    /// </summary>
+    public void AddKey()
+    {
+        Values.Add("temp_key", string.Empty);
+        foreach (var (_, document) in _subDocuments)
+            document.Values.Add("temp_key", string.Empty);
+    }
+
+    /// <summary>
+    /// Alter a key in a <see cref="ResxDocument"/> instance.
+    /// </summary>
+    /// <param name="oldKey"></param>
+    /// <param name="newKey"></param>
+    public void EditKey(string oldKey, string newKey)
+    {
+        var value = Values[oldKey];
+        Values.Remove(oldKey);
+        Values.Add(newKey, value);
+
+        foreach (var (_, document) in _subDocuments)
+        {
+            value = document.Values[oldKey];
+            document.Values.Remove(oldKey);
+            document.Values.Add(newKey, value);
+        }
+    }
+
+    /// <summary>
     /// Export all files and locales and let the user download these.
     /// </summary>
-    public void Export()
+    public async void Export()
     {
         if (!_isMainDocument)
             return;
 
         // Export .resx files first with template
-        ResxWriter.Write(this);
+        var documentString = ResxWriter.Write(this);
+        await _jsRuntime.InvokeVoidAsync("downloadFileFromArray", $"{Name}.resx", Encoding.UTF8.GetBytes(documentString));
 
         foreach (var (_, document) in _subDocuments)
-            ResxWriter.Write(document);
+        {
+            var subDocumentString = ResxWriter.Write(document);
+            await _jsRuntime.InvokeVoidAsync("downloadFileFromArray", $"{document.Name}.resx", Encoding.UTF8.GetBytes(subDocumentString));
+        }
 
         // Export .designer.cs file for main document
+        var designString = DesignerWriter.Write(this);
+        await _jsRuntime.InvokeVoidAsync("downloadFileFromArray", $"{Name}.Designer.cs", Encoding.UTF8.GetBytes(designString));
     }
-
-    [GeneratedRegex("\\w{2}(?:-\\w{2})")]
-    private static partial Regex LocaleRegex();
 }

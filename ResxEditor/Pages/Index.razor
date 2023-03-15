@@ -8,7 +8,13 @@
     {
         <div class="row mb-2">
             <div class="col">
-                <button class="btn btn-primary" @onclick="OnExportClick">Export</button>
+                <div class="float-start">
+                    <button class="btn btn-primary" @onclick="OnAddKeyClick">Add New Key</button>
+                    <button class="btn btn-danger" @onclick="OnRemoveKeyClick">Remove Key</button>
+                </div>
+                <div class="float-end">
+                    <button class="btn btn-primary" @onclick="OnExportClick">Export</button>
+                </div>
             </div>
         </div>
     }
@@ -33,23 +39,31 @@
                     foreach (var (key, dict) in _mainDocument.GetValues())
                     {
                         <tr>
-                            <td>@key</td>
+                            @if (_selectedKey == key)
+                            {
+                                <td class="m-0 p-0">
+                                    <input type="text" value="@_selectedKey" @onchange="@(e => OnKeyInputTextChanged((string)e.Value))" class="form-control bg-secondary text-white rounded-0 w-100"/>
+                                </td>
+                            }
+                            else
+                            {
+                                <td @onclick="OnDeselectClick" @ondblclick="@(_ => OnKeyCellDoubleClick(key))">@key</td>
+                            }
                             @foreach (var value in dict)
                             {
-                                if (value.Key == _selectedItem.Locale && value.Value == _selectedItem.Value)
+                                if (key == _selectedItem.Key && value.Key == _selectedItem.Locale && value.Value == _selectedItem.Value)
                                 {
                                     <td class="m-0 p-0">
-                                        <input type="text" name="@key" value="@_selectedItem.Value" @onchange="@(e => OnInputTextChanged(key, _selectedItem.Locale, (string)e.Value))"
-                                               class="form-control bg-secondary text-white rounded-0 w-100"/>
+                                        <input type="text" name="@key" value="@_selectedItem.Value" @onchange="@(e => OnValueInputTextChanged(key, _selectedItem.Locale, (string)e.Value))" class="form-control bg-secondary text-white rounded-0 w-100"/>
                                     </td>
                                 }
                                 else if (string.IsNullOrEmpty(value.Value))
                                 {
-                                    <td class="bg-danger" @onclick="OnDeselectClick" @ondblclick="@(_ => OnCellDoubleClick(value))"></td>
+                                    <td class="bg-danger" @onclick="OnDeselectClick" @ondblclick="@(_ => OnValueCellDoubleClick(key, value))"></td>
                                 }
                                 else
                                 {
-                                    <td @onclick="OnDeselectClick" @ondblclick="@(_ => OnCellDoubleClick(value))">@value.Value</td>
+                                    <td @onclick="OnDeselectClick" @ondblclick="@(_ => OnValueCellDoubleClick(key, value))">@value.Value</td>
                                 }
                             }
                         </tr>
@@ -93,7 +107,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @onclick="OnOpenClick">Open @(_loadedFiles.Count) file(s)</button>
+                <button type="submit" class="btn btn-primary" data-bs-dismiss="modal" @onclick="OnOpenClick">Open @(_loadedFiles.Count) file(s)</button>
             </div>
         </div>
     </div>
