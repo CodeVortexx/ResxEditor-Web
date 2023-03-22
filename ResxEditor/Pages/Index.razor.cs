@@ -19,6 +19,7 @@ public partial class Index : ComponentBase
     private (string Key, string Locale, string Value) _selectedItem;
     private string _oldKeyValue;
     private string _selectedKey;
+    private string _selectedMainKey;
     private ResxDocument _mainDocument;
 
     private string _namespace = "";
@@ -108,10 +109,14 @@ public partial class Index : ComponentBase
         StateHasChanged();
     }
 
-    private void OnDeselectClick()
+    private void OnCellClick(string selectedKey = null)
     {
         _selectedKey = null;
         _selectedItem = (null, null, null);
+
+        if (!string.IsNullOrEmpty(selectedKey))
+            _selectedMainKey = selectedKey;
+
         StateHasChanged();
     }
 
@@ -141,7 +146,7 @@ public partial class Index : ComponentBase
 
     private void OnRemoveKeyClick()
     {
-
+        _mainDocument.DeleteKey(_selectedMainKey);
     }
 
     #endregion

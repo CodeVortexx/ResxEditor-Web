@@ -143,17 +143,18 @@ public class ResxDocument
     }
 
     /// <summary>
-    /// Add a new key to <see cref="ResxDocument"/> instance.
+    /// Add a new key to <see cref="ResxDocument"/> instance and sub documents.
     /// </summary>
     public void AddKey()
     {
         Values.Add("temp_key", string.Empty);
+
         foreach (var (_, document) in _subDocuments)
-            document.Values.Add("temp_key", string.Empty);
+            document.AddKey();
     }
 
     /// <summary>
-    /// Alter a key in a <see cref="ResxDocument"/> instance.
+    /// Alter a key in a <see cref="ResxDocument"/> instance and sub documents.
     /// </summary>
     /// <param name="oldKey"></param>
     /// <param name="newKey"></param>
@@ -164,11 +165,22 @@ public class ResxDocument
         Values.Add(newKey, value);
 
         foreach (var (_, document) in _subDocuments)
-        {
-            value = document.Values[oldKey];
-            document.Values.Remove(oldKey);
-            document.Values.Add(newKey, value);
-        }
+            document.EditKey(oldKey, newKey);
+    }
+
+    /// <summary>
+    /// Deletes a key in a <see cref="ResxDocument"/> instance and sub documents.
+    /// </summary>
+    /// <param name="key"></param>
+    public void DeleteKey(string key)
+    {
+        if (!Values.ContainsKey(key))
+            return;
+
+        Values.Remove(key);
+
+        foreach (var (_, document) in _subDocuments)
+            document.DeleteKey(key);
     }
 
     /// <summary>

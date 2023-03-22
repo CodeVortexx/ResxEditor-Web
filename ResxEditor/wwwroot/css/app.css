@@ -63,3 +63,7 @@ html, body {
 .loading-progress-text:after {
     content: var(--blazor-load-percentage-text, "Loading");
 }
+
+.table-dark-light {
+    border-color: var(--bs-table-border-color);
+}
