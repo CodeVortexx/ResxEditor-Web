@@ -22,9 +22,6 @@ public partial class Index : ComponentBase
     private string _selectedMainKey;
     private ResxDocument _mainDocument;
 
-    private string _namespace = "";
-    private string _className = "";
-
     #region Events
 
     private void OnLoadFiles(InputFileChangeEventArgs e)
@@ -37,10 +34,11 @@ public partial class Index : ComponentBase
         if (firstFile == null)
             return;
 
-        _className = Path.GetFileNameWithoutExtension(firstFile.Name);
+        AppState.FileName = Path.GetFileNameWithoutExtension(firstFile.Name);
+        StateHasChanged();
     }
 
-    private async void OnOpenClick()
+    private async Task OnOpenClick()
     {
         _locales.Clear();
         _loadedResxFiles.Clear();
@@ -62,7 +60,7 @@ public partial class Index : ComponentBase
                 if (isMainDocument)
                 {
                     // No locale found in name, so this is the main document
-                    _mainDocument = new(JsRuntime, file.Name, namespaceString: _namespace);
+                    _mainDocument = new(JsRuntime, file.Name, namespaceString: AppState.Namespace);
                     _mainDocument.Parse(stream, true);
 
                     _loadedResxFiles.Add(_mainDocument);
@@ -75,7 +73,7 @@ public partial class Index : ComponentBase
 
                     _locales.Add(cultureInfo.Name);
 
-                    var document = new ResxDocument(JsRuntime, file.Name, cultureInfo.Name, _namespace);
+                    var document = new ResxDocument(JsRuntime, file.Name, cultureInfo.Name, AppState.Namespace);
                     document.Parse(stream);
 
                     _mainDocument?.AddSubDocument(document);
@@ -88,6 +86,8 @@ public partial class Index : ComponentBase
                 throw;
             }
         }
+
+        await AppState.DisplayModal(false);
 
         StateHasChanged();
     }

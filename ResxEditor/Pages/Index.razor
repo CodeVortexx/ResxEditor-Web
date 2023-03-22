@@ -86,29 +86,35 @@
             <div class="modal-body">
                 <div class="input-group mb-3">
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="filenameInput" placeholder="Filename" @bind-value="@_className" required>
+                        <input type="text" class="form-control" id="filenameInput" placeholder="Filename" @bind-value="@AppState.FileName" required>
                         <label for="filenameInput">Filename</label>
                     </div>
                     <span class="input-group-text">.resx</span>
                 </div>
                 <div class="input-group mb-3">
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="namespaceInput" placeholder="Test.Properties" @bind-value="@_namespace" required>
+                        <input type="text" class="form-control" id="namespaceInput" placeholder="Test.Properties" @bind-value="@AppState.Namespace" required>
                         <label for="namespaceInput">Namespace</label>
                     </div>
                 </div>
-                <div class="mb-3">
-                    <p>Loaded files: </p>
-                    <ul class="list-group list-group-flush">
-                        @foreach (var file in _loadedFiles)
-                        {
-                            <li class="list-group-item">@file.Name</li>
-                        }
-                    </ul>
-                </div>
+                @if (!AppState.IsNewDocument)
+                {
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-primary" @onclick="@(_ => AppState.OpenFilePicker())">Browse ...</button>
+                    </div>
+                    <div class="mb-3">
+                        <p>Loaded files: </p>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var file in _loadedFiles)
+                            {
+                                <li class="list-group-item">@file.Name</li>
+                            }
+                        </ul>
+                    </div>
+                }
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-primary" data-bs-dismiss="modal" @onclick="OnOpenClick">Open @(_loadedFiles.Count) file(s)</button>
+                <button type="submit" class="btn btn-primary" @onclick="OnOpenClick">Open @(_loadedFiles.Count) file(s)</button>
             </div>
         </div>
     </div>

@@ -8,3 +8,11 @@ window.downloadFileFromArray = (fileName, arrayBuffer) => {
     anchorElement.remove();
     URL.revokeObjectURL(url);
 }
+
+window.toggleModal = (modalName, mode) => {
+    $(modalName).modal(mode);
+}
+
+window.openFilePicker = () => {
+    document.getElementById('filePicker').click();
+}
