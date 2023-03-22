@@ -22,6 +22,13 @@ public partial class Index : ComponentBase
     private string _selectedMainKey;
     private ResxDocument _mainDocument;
 
+    protected override void OnInitialized()
+    {
+        AppState.StateHasChanged += () => InvokeAsync(StateHasChanged);
+
+        base.OnInitialized();
+    }
+
     #region Events
 
     private void OnLoadFiles(InputFileChangeEventArgs e)
