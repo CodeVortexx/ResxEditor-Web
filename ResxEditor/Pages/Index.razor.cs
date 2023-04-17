@@ -67,7 +67,7 @@ public partial class Index : ComponentBase
                 if (isMainDocument)
                 {
                     // No locale found in name, so this is the main document
-                    _mainDocument = new(JsRuntime, file.Name, namespaceString: AppState.Namespace);
+                    _mainDocument = new(JsRuntime, file.Name, namespaceString: AppState.Namespace, accessSpecifier: AppState.AccessSpecifier);
                     _mainDocument.Parse(stream, true);
 
                     _loadedResxFiles.Add(_mainDocument);
@@ -80,7 +80,7 @@ public partial class Index : ComponentBase
 
                     _locales.Add(cultureInfo.Name);
 
-                    var document = new ResxDocument(JsRuntime, file.Name, cultureInfo.Name, AppState.Namespace);
+                    var document = new ResxDocument(JsRuntime, file.Name, cultureInfo.Name, AppState.Namespace, AppState.AccessSpecifier);
                     document.Parse(stream);
 
                     _mainDocument?.AddSubDocument(document);
