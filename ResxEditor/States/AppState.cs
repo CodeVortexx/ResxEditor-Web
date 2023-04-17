@@ -7,6 +7,7 @@ public class AppState
     // @TODO: Add authentication shit here (ApiClient etc etc.)
     public string Namespace { get; set; }
     public string FileName { get; set; }
+    public string AccessSpecifier { get; set; }
     public bool IsNewDocument { get; set; }
 
     public event Action StateHasChanged;

@@ -12,18 +12,20 @@ public class ResxDocument
     public readonly string Name;
     public readonly string Namespace;
     public readonly string Locale;
+    public readonly string AccessSpecifier;
 
     private readonly IJSRuntime _jsRuntime;
 
     private readonly Dictionary<string, ResxDocument> _subDocuments = new();
     private bool _isMainDocument;
 
-    public ResxDocument(IJSRuntime jsRuntime, string fileName, string locale = "en-US", string namespaceString = "")
+    public ResxDocument(IJSRuntime jsRuntime, string fileName, string locale = "en-US", string namespaceString = "", string accessSpecifier = "internal")
     {
         _jsRuntime = jsRuntime;
 
         Name = Path.GetFileNameWithoutExtension(fileName);
         Locale = locale;
+        AccessSpecifier = accessSpecifier;
 
         if (!string.IsNullOrEmpty(namespaceString))
             Namespace = namespaceString;

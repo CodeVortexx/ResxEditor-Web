@@ -97,6 +97,15 @@
                         <label for="namespaceInput">Namespace</label>
                     </div>
                 </div>
+                <div class="input-group mb-3">
+                    <div class="form-floating">
+                        <select class="form-select" id="specifierInput" @bind="@AppState.AccessSpecifier" aria-label="Access Specifier Select">
+                            <option value="internal" selected>Internal</option>
+                            <option value="public">Public</option>
+                        </select>
+                        <label for="specifierInput">Access Specifier</label>
+                    </div>
+                </div>
                 @if (!AppState.IsNewDocument)
                 {
                     <div class="mb-3">

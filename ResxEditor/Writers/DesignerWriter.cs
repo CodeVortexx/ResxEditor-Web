@@ -91,7 +91,7 @@ public class DesignerWriter
             stringBuilder.AppendLine( "        /// <summary>");
             stringBuilder.AppendLine($"        ///   Looks up a localized string similar to {value}");
             stringBuilder.AppendLine( "        /// </summary>");
-            stringBuilder.AppendLine($"        internal static string {key} {{");
+            stringBuilder.AppendLine($"        {document.AccessSpecifier} static string {key} {{");
             stringBuilder.AppendLine( "            get {");
             stringBuilder.AppendLine($"                return ResourceManager.GetString(\"{key}\", resourceCulture);");
             stringBuilder.AppendLine( "            }");
