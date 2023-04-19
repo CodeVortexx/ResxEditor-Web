@@ -149,6 +149,9 @@ public class ResxDocument
     /// </summary>
     public void AddKey()
     {
+        if (Values.ContainsKey("temp_key"))
+            return;
+
         Values.Add("temp_key", string.Empty);
 
         foreach (var (_, document) in _subDocuments)
@@ -162,6 +165,9 @@ public class ResxDocument
     /// <param name="newKey"></param>
     public void EditKey(string oldKey, string newKey)
     {
+        if (Values.ContainsKey(newKey))
+            return;
+
         var value = Values[oldKey];
         Values.Remove(oldKey);
         Values.Add(newKey, value);
